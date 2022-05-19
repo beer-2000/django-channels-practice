@@ -1,16 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8"/>
     <title>Chat Room</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 </head>
 <body>
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
-    <input id="chat-message-input" type="text" size="100"><br>
-    <input id="chat-message-submit" type="button" value="Send">
-    {{ room_name|json_script:"room-name" }}
-    <script>
+    {% include 'chatrooms/nav.html' %}
+    <a class="leaveButton" href="{% url 'index' %}">Leave Room</a>
+
+    <div class="container">
+        <div id="chat-log"></div>
+    </div>
+
+    <div class="container">
+        <input class="textInput" id="chat-message-input" type="text" size="100"><br>
+        <input class="button" id="chat-message-submit" type="button" value="Send">
+        {{ room_name|json_script:"room-name" }}
+    </div>
+    <!-- <script src="{% static 'room.js' %}"> -->
+    <script type="text/javascript">
+        const chatLog = document.querySelector('#chat-log')
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        if (!chatLog.hasChildNodes()) {
+            const emptyText = document.createElement('h3')
+            emptyText.id = 'emptyText'
+            emptyText.innerText = 'No Messages'
+            emptyText.className = 'emptyText'
+            chatLog.appendChild(emptyText)
+        }
 
         const chatSocket = new WebSocket(
             'ws://'
@@ -22,7 +43,14 @@
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+            const messageElement = document.createElement('div')
+            messageElement.innerText = data.message
+            messageElement.className = 'message'
+            chatLog.appendChild(messageElement)
+
+            if (document.querySelector('#emptyText')) {
+                document.querySelector('#emptyText').remove()
+            }
         };
 
         chatSocket.onclose = function(e) {
@@ -44,6 +72,7 @@
             }));
             messageInputDom.value = '';
         };
+
     </script>
 </body>
 </html>
