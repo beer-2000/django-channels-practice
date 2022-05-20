@@ -14,7 +14,19 @@
     <a class="leaveButton" href="{% url 'index' %}">Leave Room</a>
 
     <div class="container">
-        <div id="chat-log"></div>
+        <div id="chat-log">
+            {% for chat in chats.all %}
+                {% if chat.user.id == request.user.id %}
+                    <div class="message sender">
+                        {{ chat.content }}
+                    </div>
+                {% else %}
+                    <div class="message receiver">
+                        {{ chat.content }}
+                    </div>    
+                {% endif %}
+            {% endfor %}        
+        </div>
     </div>
 
     <div class="container">
@@ -28,7 +40,7 @@
         const chatLog = document.querySelector('#chat-log')
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
-        if (!chatLog.hasChildNodes()) {
+        if (!chatLog.childNodes.length <= 1) {
             const emptyText = document.createElement('h3')
             emptyText.id = 'emptyText'
             emptyText.innerText = 'No Messages'
